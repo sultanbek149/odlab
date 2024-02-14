@@ -17024,1065 +17024,1065 @@ function jo(r, e, t, n) {
     }
         , n)
 }
-const c3 = "https://secure.web3modal.com"
-    , tl = {
-        FOUR_MINUTES_MS: 24e4,
-        TEN_SEC_MS: 1e4,
-        ONE_SEC_MS: 1e3,
-        SECURE_SITE: c3,
-        SECURE_SITE_DASHBOARD: `${c3}/dashboard`,
-        SECURE_SITE_FAVICON: `${c3}/images/favicon.png`,
-        RESTRICTED_TIMEZONES: ["ASIA/SHANGHAI", "ASIA/URUMQI", "ASIA/CHONGQING", "ASIA/HARBIN", "ASIA/KASHGAR", "ASIA/MACAU", "ASIA/HONG_KONG", "ASIA/MACAO", "ASIA/BEIJING", "ASIA/HARBIN"],
-        CONNECTOR_RDNS_MAP: {
-            coinbaseWallet: "com.coinbase.wallet"
-        }
-    }
-    , vt = {
-        isMobile() {
-            return typeof window < "u" ? !!(window.matchMedia("(pointer:coarse)").matches || /Android|webOS|iPhone|iPad|iPod|BlackBerry|Opera Mini/u.test(navigator.userAgent)) : !1
-        },
-        isAndroid() {
-            const r = window.navigator.userAgent.toLowerCase();
-            return vt.isMobile() && r.includes("android")
-        },
-        isIos() {
-            const r = window.navigator.userAgent.toLowerCase();
-            return vt.isMobile() && (r.includes("iphone") || r.includes("ipad"))
-        },
-        isClient() {
-            return typeof window < "u"
-        },
-        isPairingExpired(r) {
-            return r ? r - Date.now() <= tl.TEN_SEC_MS : !0
-        },
-        isAllowedRetry(r) {
-            return Date.now() - r >= tl.ONE_SEC_MS
-        },
-        copyToClopboard(r) {
-            navigator.clipboard.writeText(r)
-        },
-        getPairingExpiry() {
-            return Date.now() + tl.FOUR_MINUTES_MS
-        },
-        getPlainAddress(r) {
-            return r.split(":")[2]
-        },
-        async wait(r) {
-            return new Promise(e => {
-                setTimeout(e, r)
-            }
-            )
-        },
-        debounce(r, e = 500) {
-            let t;
-            return (...n) => {
-                function i() {
-                    r(...n)
-                }
-                t && clearTimeout(t),
-                    t = setTimeout(i, e)
-            }
-        },
-        isHttpUrl(r) {
-            return r.startsWith("http://") || r.startsWith("https://")
-        },
-        formatNativeUrl(r, e) {
-            if (vt.isHttpUrl(r))
-                return this.formatUniversalUrl(r, e);
-            let t = r;
-            t.includes("://") || (t = r.replaceAll("/", "").replaceAll(":", ""),
-                t = `${t}://`),
-                t.endsWith("/") || (t = `${t}/`);
-            const n = encodeURIComponent(e);
-            return {
-                redirect: `${t}wc?uri=${n}`,
-                href: t
-            }
-        },
-        formatUniversalUrl(r, e) {
-            if (!vt.isHttpUrl(r))
-                return this.formatNativeUrl(r, e);
-            let t = r;
-            t.endsWith("/") || (t = `${t}/`);
-            const n = encodeURIComponent(e);
-            return {
-                redirect: `${t}wc?uri=${n}`,
-                href: t
-            }
-        },
-        openHref(r, e) {
-            window.open(r, e, "noreferrer noopener")
-        },
-        async preloadImage(r) {
-            const e = new Promise((t, n) => {
-                const i = new Image;
-                i.onload = t,
-                    i.onerror = n,
-                    i.crossOrigin = "anonymous",
-                    i.src = r
-            }
-            );
-            return Promise.race([e, vt.wait(2e3)])
-        },
-        formatBalance(r, e) {
-            var n;
-            let t;
-            if (r === "0")
-                t = "0.000";
-            else if (typeof r == "string") {
-                const i = Number(r);
-                i && (t = (n = i.toString().match(/^-?\d+(?:\.\d{0,3})?/u)) == null ? void 0 : n[0])
-            }
-            return t ? `${t} ${e}` : `0.000 ${e}`
-        },
-        isRestrictedRegion() {
-            try {
-                const { timeZone: r } = new Intl.DateTimeFormat().resolvedOptions()
-                    , e = r.toUpperCase();
-                return tl.RESTRICTED_TIMEZONES.includes(e)
-            } catch {
-                return !1
-            }
-        },
-        getApiUrl() {
-            return vt.isRestrictedRegion() ? "https://api.web3modal.org" : "https://api.web3modal.com"
-        },
-        getBlockchainApiUrl() {
-            return vt.isRestrictedRegion() ? "https://rpc.walletconnect.org" : "https://rpc.walletconnect.com"
-        },
-        getAnalyticsUrl() {
-            return vt.isRestrictedRegion() ? "https://pulse.walletconnect.org" : "https://pulse.walletconnect.com"
-        },
-        getUUID() {
-            return crypto != null && crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/gu, r => {
-                const e = Math.random() * 16 | 0;
-                return (r === "x" ? e : e & 3 | 8).toString(16)
-            }
-            )
-        },
-        parseError(r) {
-            var e, t;
-            return typeof r == "string" ? r : typeof ((t = (e = r == null ? void 0 : r.issues) == null ? void 0 : e[0]) == null ? void 0 : t.message) == "string" ? r.issues[0].message : r instanceof Error ? r.message : "Unknown error"
-        }
-    }
-    , Kn = Ji({
-        isConnected: !1
-    })
-    , Pr = {
-        state: Kn,
-        subscribe(r) {
-            return bc(Kn, () => r(Kn))
-        },
-        subscribeKey(r, e) {
-            return jo(Kn, r, e)
-        },
-        setIsConnected(r) {
-            Kn.isConnected = r
-        },
-        setCaipAddress(r) {
-            Kn.caipAddress = r,
-                Kn.address = r ? vt.getPlainAddress(r) : void 0
-        },
-        setBalance(r, e) {
-            Kn.balance = r,
-                Kn.balanceSymbol = e
-        },
-        setProfileName(r) {
-            Kn.profileName = r
-        },
-        setProfileImage(r) {
-            Kn.profileImage = r
-        },
-        setAddressExplorerUrl(r) {
-            Kn.addressExplorerUrl = r
-        },
-        resetAccount() {
-            Kn.isConnected = !1,
-                Kn.caipAddress = void 0,
-                Kn.address = void 0,
-                Kn.balance = void 0,
-                Kn.balanceSymbol = void 0,
-                Kn.profileName = void 0,
-                Kn.profileImage = void 0,
-                Kn.addressExplorerUrl = void 0
-        }
-    };
-class F4 {
-    constructor({ baseUrl: e }) {
-        this.baseUrl = e
-    }
-    async get({ headers: e, ...t }) {
-        const n = this.createUrl(t);
-        return (await fetch(n, {
-            method: "GET",
-            headers: e
-        })).json()
-    }
-    async getBlob({ headers: e, ...t }) {
-        const n = this.createUrl(t);
-        return (await fetch(n, {
-            method: "GET",
-            headers: e
-        })).blob()
-    }
-    async post({ body: e, headers: t, ...n }) {
-        const i = this.createUrl(n);
-        return (await fetch(i, {
-            method: "POST",
-            headers: t,
-            body: e ? JSON.stringify(e) : void 0
-        })).json()
-    }
-    async put({ body: e, headers: t, ...n }) {
-        const i = this.createUrl(n);
-        return (await fetch(i, {
-            method: "PUT",
-            headers: t,
-            body: e ? JSON.stringify(e) : void 0
-        })).json()
-    }
-    async delete({ body: e, headers: t, ...n }) {
-        const i = this.createUrl(n);
-        return (await fetch(i, {
-            method: "DELETE",
-            headers: t,
-            body: e ? JSON.stringify(e) : void 0
-        })).json()
-    }
-    createUrl({ path: e, params: t }) {
-        const n = new URL(e, this.baseUrl);
-        return t && Object.entries(t).forEach(([i, s]) => {
-            s && n.searchParams.append(i, s)
-        }
-        ),
-            n
-    }
-}
-const l3 = "WALLETCONNECT_DEEPLINK_CHOICE"
-    , oC = "@w3m/recent"
-    , aC = "@w3m/connected_wallet_image_url"
-    , cC = "@w3m/connected_connector"
-    , ls = {
-        setWalletConnectDeepLink({ href: r, name: e }) {
-            try {
-                localStorage.setItem(l3, JSON.stringify({
-                    href: r,
-                    name: e
-                }))
-            } catch {
-                console.info("Unable to set WalletConnect deep link")
-            }
-        },
-        getWalletConnectDeepLink() {
-            try {
-                const r = localStorage.getItem(l3);
-                if (r)
-                    return JSON.parse(r)
-            } catch {
-                console.info("Unable to get WalletConnect deep link")
-            }
-        },
-        deleteWalletConnectDeepLink() {
-            try {
-                localStorage.removeItem(l3)
-            } catch {
-                console.info("Unable to delete WalletConnect deep link")
-            }
-        },
-        setWeb3ModalRecent(r) {
-            try {
-                const e = ls.getRecentWallets();
-                e.find(n => n.id === r.id) || (e.unshift(r),
-                    e.length > 2 && e.pop(),
-                    localStorage.setItem(oC, JSON.stringify(e)))
-            } catch {
-                console.info("Unable to set Web3Modal recent")
-            }
-        },
-        getRecentWallets() {
-            try {
-                const r = localStorage.getItem(oC);
-                return r ? JSON.parse(r) : []
-            } catch {
-                console.info("Unable to get Web3Modal recent")
-            }
-            return []
-        },
-        setConnectedWalletImageUrl(r) {
-            try {
-                localStorage.setItem(aC, r)
-            } catch {
-                console.info("Unable to set Connected Wallet Image Url")
-            }
-        },
-        getConnectedWalletImageUrl() {
-            try {
-                return localStorage.getItem(aC)
-            } catch {
-                console.info("Unable to set Connected Wallet Image Url")
-            }
-        },
-        setConnectedConnector(r) {
-            try {
-                localStorage.setItem(cC, r)
-            } catch {
-                console.info("Unable to set Connected Connector")
-            }
-        },
-        getConnectedConnector() {
-            try {
-                return localStorage.getItem(cC)
-            } catch {
-                console.info("Unable to get Connected Connector")
-            }
-        }
-    }
-    , Dl = Ji({
-        walletImages: {},
-        networkImages: {},
-        connectorImages: {},
-        tokenImages: {}
-    })
-    , bd = {
-        state: Dl,
-        subscribeNetworkImages(r) {
-            return bc(Dl.networkImages, () => r(Dl.networkImages))
-        },
-        subscribeKey(r, e) {
-            return jo(Dl, r, e)
-        },
-        setWalletImage(r, e) {
-            Dl.walletImages[r] = e
-        },
-        setNetworkImage(r, e) {
-            Dl.networkImages[r] = e
-        },
-        setConnectorImage(r, e) {
-            Dl.connectorImages[r] = e
-        },
-        setTokenImage(r, e) {
-            Dl.tokenImages[r] = e
-        }
-    }
-    , Hs = Ji({
-        projectId: "",
-        sdkType: "w3m",
-        sdkVersion: "html-wagmi-undefined"
-    })
-    , Ur = {
-        state: Hs,
-        subscribeKey(r, e) {
-            return jo(Hs, r, e)
-        },
-        setProjectId(r) {
-            Hs.projectId = r
-        },
-        setIncludeWalletIds(r) {
-            Hs.includeWalletIds = r
-        },
-        setExcludeWalletIds(r) {
-            Hs.excludeWalletIds = r
-        },
-        setFeaturedWalletIds(r) {
-            Hs.featuredWalletIds = r
-        },
-        setTokens(r) {
-            Hs.tokens = r
-        },
-        setTermsConditionsUrl(r) {
-            Hs.termsConditionsUrl = r
-        },
-        setPrivacyPolicyUrl(r) {
-            Hs.privacyPolicyUrl = r
-        },
-        setCustomWallets(r) {
-            Hs.customWallets = r
-        },
-        setEnableAnalytics(r) {
-            Hs.enableAnalytics = r
-        },
-        setSdkVersion(r) {
-            Hs.sdkVersion = r
-        },
-        setMetadata(r) {
-            Hs.metadata = r
-        }
-    }
-    , Ju = Ji({
-        connectors: []
-    })
-    , Xr = {
-        state: Ju,
-        subscribeKey(r, e) {
-            return jo(Ju, r, e)
-        },
-        setConnectors(r) {
-            Ju.connectors = r.map(e => Fd(e))
-        },
-        addConnector(r) {
-            var e, t;
-            if (Ju.connectors.push(Fd(r)),
-                r.id === "w3mEmail") {
-                const n = r
-                    , i = zN(Ur.state);
-                (t = (e = n == null ? void 0 : n.provider) == null ? void 0 : e.syncDappData) == null || t.call(e, {
-                    metadata: i.metadata,
-                    sdkVersion: i.sdkVersion,
-                    projectId: i.projectId
-                })
-            }
-        },
-        getEmailConnector() {
-            return Ju.connectors.find(r => r.type === "EMAIL")
-        },
-        getAnnouncedConnectorRdns() {
-            return Ju.connectors.filter(r => r.type === "ANNOUNCED").map(r => {
-                var e;
-                return (e = r.info) == null ? void 0 : e.rdns
-            }
-            )
-        },
-        getConnectors() {
-            return Ju.connectors
-        }
-    }
-    , Tp = Ji({
-        open: !1,
-        selectedNetworkId: void 0
-    })
-    , Wd = {
-        state: Tp,
-        subscribe(r) {
-            return bc(Tp, () => r(Tp))
-        },
-        set(r) {
-            Object.assign(Tp, {
-                ...Tp,
-                ...r
-            })
-        }
-    }
-    , Di = Ji({
-        supportsAllNetworks: !0,
-        isDefaultCaipNetwork: !1
-    })
-    , Tn = {
-        state: Di,
-        subscribeKey(r, e) {
-            return jo(Di, r, e)
-        },
-        _getClient() {
-            if (!Di._client)
-                throw new Error("NetworkController client not set");
-            return Di._client
-        },
-        setClient(r) {
-            Di._client = Fd(r)
-        },
-        setCaipNetwork(r) {
-            Di.caipNetwork = r,
-                Wd.set({
-                    selectedNetworkId: r == null ? void 0 : r.id
-                })
-        },
-        setDefaultCaipNetwork(r) {
-            Di.caipNetwork = r,
-                Wd.set({
-                    selectedNetworkId: r == null ? void 0 : r.id
-                }),
-                Di.isDefaultCaipNetwork = !0
-        },
-        setRequestedCaipNetworks(r) {
-            Di.requestedCaipNetworks = r
-        },
-        async getApprovedCaipNetworksData() {
-            const r = await this._getClient().getApprovedCaipNetworksData();
-            Di.supportsAllNetworks = r.supportsAllNetworks,
-                Di.approvedCaipNetworkIds = r.approvedCaipNetworkIds
-        },
-        async switchActiveNetwork(r) {
-            await this._getClient().switchCaipNetwork(r),
-                Di.caipNetwork = r
-        },
-        resetNetwork() {
-            Di.isDefaultCaipNetwork || (Di.caipNetwork = void 0),
-                Di.approvedCaipNetworkIds = void 0,
-                Di.supportsAllNetworks = !0
-        }
-    }
-    , CZ = vt.getApiUrl()
-    , Ma = new F4({
-        baseUrl: CZ
-    })
-    , IZ = "40"
-    , lC = "4"
-    , ns = Ji({
-        page: 1,
-        count: 0,
-        featured: [],
-        recommended: [],
-        wallets: [],
-        search: []
-    })
-    , lr = {
-        state: ns,
-        subscribeKey(r, e) {
-            return jo(ns, r, e)
-        },
-        _getApiHeaders() {
-            const { projectId: r, sdkType: e, sdkVersion: t } = Ur.state;
-            return {
-                "x-project-id": r,
-                "x-sdk-type": e,
-                "x-sdk-version": t
-            }
-        },
-        async _fetchWalletImage(r) {
-            const e = `${Ma.baseUrl}/getWalletImage/${r}`
-                , t = await Ma.getBlob({
-                    path: e,
-                    headers: lr._getApiHeaders()
-                });
-            bd.setWalletImage(r, URL.createObjectURL(t))
-        },
-        async _fetchNetworkImage(r) {
-            const e = `${Ma.baseUrl}/public/getAssetImage/${r}`
-                , t = await Ma.getBlob({
-                    path: e,
-                    headers: lr._getApiHeaders()
-                });
-            bd.setNetworkImage(r, URL.createObjectURL(t))
-        },
-        async _fetchConnectorImage(r) {
-            const e = `${Ma.baseUrl}/public/getAssetImage/${r}`
-                , t = await Ma.getBlob({
-                    path: e,
-                    headers: lr._getApiHeaders()
-                });
-            bd.setConnectorImage(r, URL.createObjectURL(t))
-        },
-        async fetchNetworkImages() {
-            const { requestedCaipNetworks: r } = Tn.state
-                , e = r == null ? void 0 : r.map(({ imageId: t }) => t).filter(Boolean);
-            e && await Promise.allSettled(e.map(t => lr._fetchNetworkImage(t)))
-        },
-        async fetchConnectorImages() {
-            const { connectors: r } = Xr.state
-                , e = r.map(({ imageId: t }) => t).filter(Boolean);
-            await Promise.allSettled(e.map(t => lr._fetchConnectorImage(t)))
-        },
-        async fetchFeaturedWallets() {
-            const { featuredWalletIds: r } = Ur.state;
-            if (r != null && r.length) {
-                const { data: e } = await Ma.get({
-                    path: "/getWallets",
-                    headers: lr._getApiHeaders(),
-                    params: {
-                        page: "1",
-                        entries: r != null && r.length ? String(r.length) : lC,
-                        include: r == null ? void 0 : r.join(",")
-                    }
-                });
-                e.sort((n, i) => r.indexOf(n.id) - r.indexOf(i.id));
-                const t = e.map(n => n.image_id).filter(Boolean);
-                await Promise.allSettled(t.map(n => lr._fetchWalletImage(n))),
-                    ns.featured = e
-            }
-        },
-        async fetchRecommendedWallets() {
-            const { includeWalletIds: r, excludeWalletIds: e, featuredWalletIds: t } = Ur.state
-                , n = [...e ?? [], ...t ?? []].filter(Boolean)
-                , { data: i, count: s } = await Ma.get({
-                    path: "/getWallets",
-                    headers: lr._getApiHeaders(),
-                    params: {
-                        page: "1",
-                        entries: lC,
-                        include: r == null ? void 0 : r.join(","),
-                        exclude: n == null ? void 0 : n.join(",")
-                    }
-                })
-                , o = ls.getRecentWallets()
-                , a = i.map(u => u.image_id).filter(Boolean)
-                , c = o.map(u => u.image_id).filter(Boolean);
-            await Promise.allSettled([...a, ...c].map(u => lr._fetchWalletImage(u))),
-                ns.recommended = i,
-                ns.count = s ?? 0
-        },
-        async fetchWallets({ page: r }) {
-            const { includeWalletIds: e, excludeWalletIds: t, featuredWalletIds: n } = Ur.state
-                , i = [...ns.recommended.map(({ id: c }) => c), ...t ?? [], ...n ?? []].filter(Boolean)
-                , { data: s, count: o } = await Ma.get({
-                    path: "/getWallets",
-                    headers: lr._getApiHeaders(),
-                    params: {
-                        page: String(r),
-                        entries: IZ,
-                        include: e == null ? void 0 : e.join(","),
-                        exclude: i.join(",")
-                    }
-                })
-                , a = s.map(c => c.image_id).filter(Boolean);
-            await Promise.allSettled([...a.map(c => lr._fetchWalletImage(c)), vt.wait(300)]),
-                ns.wallets = [...ns.wallets, ...s],
-                ns.count = o > ns.count ? o : ns.count,
-                ns.page = r
-        },
-        async searchWallet({ search: r }) {
-            const { includeWalletIds: e, excludeWalletIds: t } = Ur.state;
-            ns.search = [];
-            const { data: n } = await Ma.get({
-                path: "/getWallets",
-                headers: lr._getApiHeaders(),
-                params: {
-                    page: "1",
-                    entries: "100",
-                    search: r,
-                    include: e == null ? void 0 : e.join(","),
-                    exclude: t == null ? void 0 : t.join(",")
-                }
-            })
-                , i = n.map(s => s.image_id).filter(Boolean);
-            await Promise.allSettled([...i.map(s => lr._fetchWalletImage(s)), vt.wait(300)]),
-                ns.search = n
-        },
-        prefetch() {
-            ns.prefetchPromise = Promise.race([Promise.allSettled([lr.fetchFeaturedWallets(), lr.fetchRecommendedWallets(), lr.fetchNetworkImages(), lr.fetchConnectorImages()]), vt.wait(3e3)])
-        }
-    }
-    , TZ = vt.getAnalyticsUrl()
-    , RZ = new F4({
-        baseUrl: TZ
-    })
-    , NZ = ["MODAL_CREATED"]
-    , Vh = Ji({
-        timestamp: Date.now(),
-        data: {
-            type: "track",
-            event: "MODAL_CREATED"
-        }
-    })
-    , Ft = {
-        state: Vh,
-        subscribe(r) {
-            return bc(Vh, () => r(Vh))
-        },
-        _getApiHeaders() {
-            const { projectId: r, sdkType: e, sdkVersion: t } = Ur.state;
-            return {
-                "x-project-id": r,
-                "x-sdk-type": e,
-                "x-sdk-version": t
-            }
-        },
-        async _sendAnalyticsEvent(r) {
-            try {
-                if (NZ.includes(r.data.event) || typeof window > "u")
-                    return;
-                await RZ.post({
-                    path: "/e",
-                    headers: Ft._getApiHeaders(),
-                    body: {
-                        eventId: vt.getUUID(),
-                        url: window.location.href,
-                        domain: window.location.hostname,
-                        timestamp: r.timestamp,
-                        props: r.data
-                    }
-                })
-            } catch { }
-        },
-        sendEvent(r) {
-            Vh.timestamp = Date.now(),
-                Vh.data = r,
-                Ur.state.enableAnalytics && Ft._sendAnalyticsEvent(Vh)
-        }
-    }
-    , pn = Ji({
-        view: "Connect",
-        history: ["Connect"]
-    })
-    , at = {
-        state: pn,
-        subscribeKey(r, e) {
-            return jo(pn, r, e)
-        },
-        push(r, e) {
-            r !== pn.view && (pn.view = r,
-                pn.history.push(r),
-                pn.data = e)
-        },
-        reset(r) {
-            pn.view = r,
-                pn.history = [r]
-        },
-        replace(r, e) {
-            pn.history.length > 1 && pn.history.at(-1) !== r && (pn.view = r,
-                pn.history[pn.history.length - 1] = r,
-                pn.data = e)
-        },
-        goBack() {
-            if (pn.history.length > 1) {
-                pn.history.pop();
-                const [r] = pn.history.slice(-1);
-                r && (pn.view = r)
-            }
-        },
-        goBackToIndex(r) {
-            if (pn.history.length > 1) {
-                pn.history = pn.history.slice(0, r + 1);
-                const [e] = pn.history.slice(-1);
-                e && (pn.view = e)
-            }
-        }
-    }
-    , Yu = Ji({
-        loading: !1,
-        open: !1
-    })
-    , en = {
-        state: Yu,
-        subscribe(r) {
-            return bc(Yu, () => r(Yu))
-        },
-        subscribeKey(r, e) {
-            return jo(Yu, r, e)
-        },
-        async open(r) {
-            await lr.state.prefetchPromise,
-                r != null && r.view ? at.reset(r.view) : Pr.state.isConnected ? at.reset("Account") : at.reset("Connect"),
-                Yu.open = !0,
-                Wd.set({
-                    open: !0
-                }),
-                Ft.sendEvent({
-                    type: "track",
-                    event: "MODAL_OPEN"
-                })
-        },
-        close() {
-            Yu.open = !1,
-                Wd.set({
-                    open: !1
-                }),
-                Ft.sendEvent({
-                    type: "track",
-                    event: "MODAL_CLOSE"
-                })
-        },
-        setLoading(r) {
-            Yu.loading = r
-        }
-    }
-    , OZ = vt.getBlockchainApiUrl()
-    , uC = new F4({
-        baseUrl: OZ
-    })
-    , VN = {
-        fetchIdentity({ caipChainId: r, address: e }) {
-            return uC.get({
-                path: `/v1/identity/${e}`,
-                params: {
-                    chainId: r,
-                    projectId: Ur.state.projectId
-                }
-            })
-        },
-        fetchTransactions({ account: r, projectId: e, cursor: t }) {
-            const n = t ? {
-                cursor: t
-            } : {};
-            return uC.get({
-                path: `/v1/account/${r}/history?projectId=${e}`,
-                params: n
-            })
-        }
-    }
-    , Dc = Ji({
-        message: "",
-        variant: "success",
-        open: !1
-    })
-    , Rn = {
-        state: Dc,
-        subscribeKey(r, e) {
-            return jo(Dc, r, e)
-        },
-        showSuccess(r) {
-            Dc.message = r,
-                Dc.variant = "success",
-                Dc.open = !0
-        },
-        showError(r) {
-            const e = vt.parseError(r);
-            Dc.message = e,
-                Dc.variant = "error",
-                Dc.open = !0
-        },
-        hide() {
-            Dc.open = !1
-        }
-    }
-    , Zn = Ji({
-        transactions: [],
-        transactionsByYear: {},
-        loading: !1,
-        empty: !1,
-        next: void 0
-    })
-    , ra = {
-        state: Zn,
-        subscribe(r) {
-            return bc(Zn, () => r(Zn))
-        },
-        async fetchTransactions(r) {
-            const { projectId: e } = Ur.state;
-            if (!e || !r)
-                throw new Error("Transactions can't be fetched without a projectId and an accountAddress");
-            Zn.loading = !0;
-            try {
-                const t = await VN.fetchTransactions({
-                    account: r,
-                    projectId: e,
-                    cursor: Zn.next
-                })
-                    , n = this.filterSpamTransactions(t.data)
-                    , i = [...Zn.transactions, ...n];
-                Zn.loading = !1,
-                    Zn.transactions = i,
-                    Zn.transactionsByYear = this.groupTransactionsByYear(Zn.transactionsByYear, n),
-                    Zn.empty = i.length === 0,
-                    Zn.next = t.next ? t.next : void 0
-            } catch {
-                Ft.sendEvent({
-                    type: "track",
-                    event: "ERROR_FETCH_TRANSACTIONS",
-                    properties: {
-                        address: r,
-                        projectId: e,
-                        cursor: Zn.next
-                    }
-                }),
-                    Rn.showError("Failed to fetch transactions"),
-                    Zn.loading = !1,
-                    Zn.empty = !0
-            }
-        },
-        groupTransactionsByYear(r = {}, e = []) {
-            const t = r;
-            return e.forEach(n => {
-                var s;
-                const i = new Date(n.metadata.minedAt).getFullYear();
-                t[i] || (t[i] = []),
-                    (s = t[i]) == null || s.push(n)
-            }
-            ),
-                t
-        },
-        filterSpamTransactions(r) {
-            return r.filter(e => !e.transfers.every(n => {
-                var i;
-                return ((i = n.nft_info) == null ? void 0 : i.flags.is_spam) === !0
-            }
-            ))
-        },
-        resetTransactions() {
-            Zn.transactions = [],
-                Zn.transactionsByYear = {},
-                Zn.loading = !1,
-                Zn.empty = !1,
-                Zn.next = void 0
-        }
-    }
-    , ui = Ji({
-        wcError: !1,
-        buffering: !1
-    })
-    , wr = {
-        state: ui,
-        subscribeKey(r, e) {
-            return jo(ui, r, e)
-        },
-        _getClient() {
-            if (!ui._client)
-                throw new Error("ConnectionController client not set");
-            return ui._client
-        },
-        setClient(r) {
-            ui._client = Fd(r)
-        },
-        connectWalletConnect() {
-            ui.wcPromise = this._getClient().connectWalletConnect(r => {
-                ui.wcUri = r,
-                    ui.wcPairingExpiry = vt.getPairingExpiry()
-            }
-            )
-        },
-        async connectExternal(r) {
-            var e, t;
-            await ((t = (e = this._getClient()).connectExternal) == null ? void 0 : t.call(e, r)),
-                ls.setConnectedConnector(r.type)
-        },
-        async signMessage(r) {
-            return this._getClient().signMessage(r)
-        },
-        checkInstalled(r) {
-            var e, t;
-            return (t = (e = this._getClient()).checkInstalled) == null ? void 0 : t.call(e, r)
-        },
-        resetWcConnection() {
-            ui.wcUri = void 0,
-                ui.wcPairingExpiry = void 0,
-                ui.wcPromise = void 0,
-                ui.wcLinking = void 0,
-                ui.recentWallet = void 0,
-                ra.resetTransactions(),
-                ls.deleteWalletConnectDeepLink()
-        },
-        setWcLinking(r) {
-            ui.wcLinking = r
-        },
-        setWcError(r) {
-            ui.wcError = r,
-                ui.buffering = !1
-        },
-        setRecentWallet(r) {
-            ui.recentWallet = r
-        },
-        setBuffering(r) {
-            ui.buffering = r
-        },
-        async disconnect() {
-            await this._getClient().disconnect(),
-                this.resetWcConnection()
-        }
-    }
-    , zs = Ji({
-        status: "uninitialized",
-        isSiweEnabled: !1
-    })
-    , jn = {
-        state: zs,
-        subscribeKey(r, e) {
-            return jo(zs, r, e)
-        },
-        subscribe(r) {
-            return bc(zs, () => r(zs))
-        },
-        _getClient() {
-            if (!zs._client)
-                throw new Error("SIWEController client not set");
-            return zs._client
-        },
-        async getNonce() {
-            const e = await this._getClient().getNonce();
-            return this.setNonce(e),
-                e
-        },
-        async getSession() {
-            const e = await this._getClient().getSession();
-            return e && (this.setSession(e),
-                this.setStatus("success")),
-                e
-        },
-        createMessage(r) {
-            const t = this._getClient().createMessage(r);
-            return this.setMessage(t),
-                t
-        },
-        async verifyMessage(r) {
-            return await this._getClient().verifyMessage(r)
-        },
-        async signIn() {
-            return await this._getClient().signIn()
-        },
-        async signOut() {
-            var e;
-            const r = this._getClient();
-            await r.signOut(),
-                this.setStatus("ready"),
-                (e = r.onSignOut) == null || e.call(r)
-        },
-        onSignIn(r) {
-            var t;
-            const e = this._getClient();
-            (t = e.onSignIn) == null || t.call(e, r)
-        },
-        onSignOut() {
-            var e;
-            const r = this._getClient();
-            (e = r.onSignOut) == null || e.call(r)
-        },
-        setSIWEClient(r) {
-            zs._client = Fd(r),
-                zs.status = "ready",
-                zs.isSiweEnabled = r.options.enabled
-        },
-        setNonce(r) {
-            zs.nonce = r
-        },
-        setStatus(r) {
-            zs.status = r
-        },
-        setMessage(r) {
-            zs.message = r
-        },
-        setSession(r) {
-            zs.session = r
-        }
-    }
-    , Qu = Ji({
-        themeMode: "dark",
-        themeVariables: {}
-    })
-    , Rs = {
-        state: Qu,
-        subscribe(r) {
-            return bc(Qu, () => r(Qu))
-        },
-        setThemeMode(r) {
-            Qu.themeMode = r
-        },
-        setThemeVariables(r) {
-            Qu.themeVariables = {
-                ...Qu.themeVariables,
-                ...r
-            }
-        },
-        getSnapshot() {
-            return zN(Qu)
-        }
-    }
-    , Cn = {
-        getWalletImage(r) {
-            if (r != null && r.image_url)
-                return r == null ? void 0 : r.image_url;
-            if (r != null && r.image_id)
-                return bd.state.walletImages[r.image_id]
-        },
-        getNetworkImage(r) {
-            if (r != null && r.imageUrl)
-                return r == null ? void 0 : r.imageUrl;
-            if (r != null && r.imageId)
-                return bd.state.networkImages[r.imageId]
-        },
-        getConnectorImage(r) {
-            if (r != null && r.imageUrl)
-                return r.imageUrl;
-            if (r != null && r.imageId)
-                return bd.state.connectorImages[r.imageId]
-        }
-    }
-    , qN = {
-        goBackOrCloseModal() {
-            at.state.history.length > 1 ? at.goBack() : en.close()
-        },
-        navigateAfterNetworkSwitch() {
-            const { history: r } = at.state
-                , e = r.findIndex(t => t === "Networks");
-            e >= 1 ? at.goBackToIndex(e - 1) : en.close()
-        }
-    };
+// const c3 = "https://secure.web3modal.com"
+//     , tl = {
+//         FOUR_MINUTES_MS: 24e4,
+//         TEN_SEC_MS: 1e4,
+//         ONE_SEC_MS: 1e3,
+//         SECURE_SITE: c3,
+//         SECURE_SITE_DASHBOARD: `${c3}/dashboard`,
+//         SECURE_SITE_FAVICON: `${c3}/images/favicon.png`,
+//         RESTRICTED_TIMEZONES: ["ASIA/SHANGHAI", "ASIA/URUMQI", "ASIA/CHONGQING", "ASIA/HARBIN", "ASIA/KASHGAR", "ASIA/MACAU", "ASIA/HONG_KONG", "ASIA/MACAO", "ASIA/BEIJING", "ASIA/HARBIN"],
+//         CONNECTOR_RDNS_MAP: {
+//             coinbaseWallet: "com.coinbase.wallet"
+//         }
+//     }
+//     , vt = {
+//         isMobile() {
+//             return typeof window < "u" ? !!(window.matchMedia("(pointer:coarse)").matches || /Android|webOS|iPhone|iPad|iPod|BlackBerry|Opera Mini/u.test(navigator.userAgent)) : !1
+//         },
+//         isAndroid() {
+//             const r = window.navigator.userAgent.toLowerCase();
+//             return vt.isMobile() && r.includes("android")
+//         },
+//         isIos() {
+//             const r = window.navigator.userAgent.toLowerCase();
+//             return vt.isMobile() && (r.includes("iphone") || r.includes("ipad"))
+//         },
+//         isClient() {
+//             return typeof window < "u"
+//         },
+//         isPairingExpired(r) {
+//             return r ? r - Date.now() <= tl.TEN_SEC_MS : !0
+//         },
+//         isAllowedRetry(r) {
+//             return Date.now() - r >= tl.ONE_SEC_MS
+//         },
+//         copyToClopboard(r) {
+//             navigator.clipboard.writeText(r)
+//         },
+//         getPairingExpiry() {
+//             return Date.now() + tl.FOUR_MINUTES_MS
+//         },
+//         getPlainAddress(r) {
+//             return r.split(":")[2]
+//         },
+//         async wait(r) {
+//             return new Promise(e => {
+//                 setTimeout(e, r)
+//             }
+//             )
+//         },
+//         debounce(r, e = 500) {
+//             let t;
+//             return (...n) => {
+//                 function i() {
+//                     r(...n)
+//                 }
+//                 t && clearTimeout(t),
+//                     t = setTimeout(i, e)
+//             }
+//         },
+//         isHttpUrl(r) {
+//             return r.startsWith("http://") || r.startsWith("https://")
+//         },
+//         formatNativeUrl(r, e) {
+//             if (vt.isHttpUrl(r))
+//                 return this.formatUniversalUrl(r, e);
+//             let t = r;
+//             t.includes("://") || (t = r.replaceAll("/", "").replaceAll(":", ""),
+//                 t = `${t}://`),
+//                 t.endsWith("/") || (t = `${t}/`);
+//             const n = encodeURIComponent(e);
+//             return {
+//                 redirect: `${t}wc?uri=${n}`,
+//                 href: t
+//             }
+//         },
+//         formatUniversalUrl(r, e) {
+//             if (!vt.isHttpUrl(r))
+//                 return this.formatNativeUrl(r, e);
+//             let t = r;
+//             t.endsWith("/") || (t = `${t}/`);
+//             const n = encodeURIComponent(e);
+//             return {
+//                 redirect: `${t}wc?uri=${n}`,
+//                 href: t
+//             }
+//         },
+//         openHref(r, e) {
+//             window.open(r, e, "noreferrer noopener")
+//         },
+//         async preloadImage(r) {
+//             const e = new Promise((t, n) => {
+//                 const i = new Image;
+//                 i.onload = t,
+//                     i.onerror = n,
+//                     i.crossOrigin = "anonymous",
+//                     i.src = r
+//             }
+//             );
+//             return Promise.race([e, vt.wait(2e3)])
+//         },
+//         formatBalance(r, e) {
+//             var n;
+//             let t;
+//             if (r === "0")
+//                 t = "0.000";
+//             else if (typeof r == "string") {
+//                 const i = Number(r);
+//                 i && (t = (n = i.toString().match(/^-?\d+(?:\.\d{0,3})?/u)) == null ? void 0 : n[0])
+//             }
+//             return t ? `${t} ${e}` : `0.000 ${e}`
+//         },
+//         isRestrictedRegion() {
+//             try {
+//                 const { timeZone: r } = new Intl.DateTimeFormat().resolvedOptions()
+//                     , e = r.toUpperCase();
+//                 return tl.RESTRICTED_TIMEZONES.includes(e)
+//             } catch {
+//                 return !1
+//             }
+//         },
+//         getApiUrl() {
+//             return vt.isRestrictedRegion() ? "https://api.web3modal.org" : "https://api.web3modal.com"
+//         },
+//         getBlockchainApiUrl() {
+//             return vt.isRestrictedRegion() ? "https://rpc.walletconnect.org" : "https://rpc.walletconnect.com"
+//         },
+//         getAnalyticsUrl() {
+//             return vt.isRestrictedRegion() ? "https://pulse.walletconnect.org" : "https://pulse.walletconnect.com"
+//         },
+//         getUUID() {
+//             return crypto != null && crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/gu, r => {
+//                 const e = Math.random() * 16 | 0;
+//                 return (r === "x" ? e : e & 3 | 8).toString(16)
+//             }
+//             )
+//         },
+//         parseError(r) {
+//             var e, t;
+//             return typeof r == "string" ? r : typeof ((t = (e = r == null ? void 0 : r.issues) == null ? void 0 : e[0]) == null ? void 0 : t.message) == "string" ? r.issues[0].message : r instanceof Error ? r.message : "Unknown error"
+//         }
+//     }
+//     , Kn = Ji({
+//         isConnected: !1
+//     })
+//     , Pr = {
+//         state: Kn,
+//         subscribe(r) {
+//             return bc(Kn, () => r(Kn))
+//         },
+//         subscribeKey(r, e) {
+//             return jo(Kn, r, e)
+//         },
+//         setIsConnected(r) {
+//             Kn.isConnected = r
+//         },
+//         setCaipAddress(r) {
+//             Kn.caipAddress = r,
+//                 Kn.address = r ? vt.getPlainAddress(r) : void 0
+//         },
+//         setBalance(r, e) {
+//             Kn.balance = r,
+//                 Kn.balanceSymbol = e
+//         },
+//         setProfileName(r) {
+//             Kn.profileName = r
+//         },
+//         setProfileImage(r) {
+//             Kn.profileImage = r
+//         },
+//         setAddressExplorerUrl(r) {
+//             Kn.addressExplorerUrl = r
+//         },
+//         resetAccount() {
+//             Kn.isConnected = !1,
+//                 Kn.caipAddress = void 0,
+//                 Kn.address = void 0,
+//                 Kn.balance = void 0,
+//                 Kn.balanceSymbol = void 0,
+//                 Kn.profileName = void 0,
+//                 Kn.profileImage = void 0,
+//                 Kn.addressExplorerUrl = void 0
+//         }
+//     };
+// class F4 {
+//     constructor({ baseUrl: e }) {
+//         this.baseUrl = e
+//     }
+//     async get({ headers: e, ...t }) {
+//         const n = this.createUrl(t);
+//         return (await fetch(n, {
+//             method: "GET",
+//             headers: e
+//         })).json()
+//     }
+//     async getBlob({ headers: e, ...t }) {
+//         const n = this.createUrl(t);
+//         return (await fetch(n, {
+//             method: "GET",
+//             headers: e
+//         })).blob()
+//     }
+//     async post({ body: e, headers: t, ...n }) {
+//         const i = this.createUrl(n);
+//         return (await fetch(i, {
+//             method: "POST",
+//             headers: t,
+//             body: e ? JSON.stringify(e) : void 0
+//         })).json()
+//     }
+//     async put({ body: e, headers: t, ...n }) {
+//         const i = this.createUrl(n);
+//         return (await fetch(i, {
+//             method: "PUT",
+//             headers: t,
+//             body: e ? JSON.stringify(e) : void 0
+//         })).json()
+//     }
+//     async delete({ body: e, headers: t, ...n }) {
+//         const i = this.createUrl(n);
+//         return (await fetch(i, {
+//             method: "DELETE",
+//             headers: t,
+//             body: e ? JSON.stringify(e) : void 0
+//         })).json()
+//     }
+//     createUrl({ path: e, params: t }) {
+//         const n = new URL(e, this.baseUrl);
+//         return t && Object.entries(t).forEach(([i, s]) => {
+//             s && n.searchParams.append(i, s)
+//         }
+//         ),
+//             n
+//     }
+// }
+// const l3 = "WALLETCONNECT_DEEPLINK_CHOICE"
+//   , oC = "@w3m/recent"
+//   , aC = "@w3m/connected_wallet_image_url"
+//   , cC = "@w3m/connected_connector"
+//   , ls = {
+//     setWalletConnectDeepLink({href: r, name: e}) {
+//         try {
+//             localStorage.setItem(l3, JSON.stringify({
+//                 href: r,
+//                 name: e
+//             }))
+//         } catch {
+//             console.info("Unable to set WalletConnect deep link")
+//         }
+//     },
+//     getWalletConnectDeepLink() {
+//         try {
+//             const r = localStorage.getItem(l3);
+//             if (r)
+//                 return JSON.parse(r)
+//         } catch {
+//             console.info("Unable to get WalletConnect deep link")
+//         }
+//     },
+//     deleteWalletConnectDeepLink() {
+//         try {
+//             localStorage.removeItem(l3)
+//         } catch {
+//             console.info("Unable to delete WalletConnect deep link")
+//         }
+//     },
+//     setWeb3ModalRecent(r) {
+//         try {
+//             const e = ls.getRecentWallets();
+//             e.find(n=>n.id === r.id) || (e.unshift(r),
+//             e.length > 2 && e.pop(),
+//             localStorage.setItem(oC, JSON.stringify(e)))
+//         } catch {
+//             console.info("Unable to set Web3Modal recent")
+//         }
+//     },
+//     getRecentWallets() {
+//         try {
+//             const r = localStorage.getItem(oC);
+//             return r ? JSON.parse(r) : []
+//         } catch {
+//             console.info("Unable to get Web3Modal recent")
+//         }
+//         return []
+//     },
+//     setConnectedWalletImageUrl(r) {
+//         try {
+//             localStorage.setItem(aC, r)
+//         } catch {
+//             console.info("Unable to set Connected Wallet Image Url")
+//         }
+//     },
+//     getConnectedWalletImageUrl() {
+//         try {
+//             return localStorage.getItem(aC)
+//         } catch {
+//             console.info("Unable to set Connected Wallet Image Url")
+//         }
+//     },
+//     setConnectedConnector(r) {
+//         try {
+//             localStorage.setItem(cC, r)
+//         } catch {
+//             console.info("Unable to set Connected Connector")
+//         }
+//     },
+//     getConnectedConnector() {
+//         try {
+//             return localStorage.getItem(cC)
+//         } catch {
+//             console.info("Unable to get Connected Connector")
+//         }
+//     }
+// }
+//   , Dl = Ji({
+//     walletImages: {},
+//     networkImages: {},
+//     connectorImages: {},
+//     tokenImages: {}
+// })
+//   , bd = {
+//     state: Dl,
+//     subscribeNetworkImages(r) {
+//         return bc(Dl.networkImages, ()=>r(Dl.networkImages))
+//     },
+//     subscribeKey(r, e) {
+//         return jo(Dl, r, e)
+//     },
+//     setWalletImage(r, e) {
+//         Dl.walletImages[r] = e
+//     },
+//     setNetworkImage(r, e) {
+//         Dl.networkImages[r] = e
+//     },
+//     setConnectorImage(r, e) {
+//         Dl.connectorImages[r] = e
+//     },
+//     setTokenImage(r, e) {
+//         Dl.tokenImages[r] = e
+//     }
+// }
+//   , Hs = Ji({
+//     projectId: "",
+//     sdkType: "w3m",
+//     sdkVersion: "html-wagmi-undefined"
+// })
+//   , Ur = {
+//     state: Hs,
+//     subscribeKey(r, e) {
+//         return jo(Hs, r, e)
+//     },
+//     setProjectId(r) {
+//         Hs.projectId = r
+//     },
+//     setIncludeWalletIds(r) {
+//         Hs.includeWalletIds = r
+//     },
+//     setExcludeWalletIds(r) {
+//         Hs.excludeWalletIds = r
+//     },
+//     setFeaturedWalletIds(r) {
+//         Hs.featuredWalletIds = r
+//     },
+//     setTokens(r) {
+//         Hs.tokens = r
+//     },
+//     setTermsConditionsUrl(r) {
+//         Hs.termsConditionsUrl = r
+//     },
+//     setPrivacyPolicyUrl(r) {
+//         Hs.privacyPolicyUrl = r
+//     },
+//     setCustomWallets(r) {
+//         Hs.customWallets = r
+//     },
+//     setEnableAnalytics(r) {
+//         Hs.enableAnalytics = r
+//     },
+//     setSdkVersion(r) {
+//         Hs.sdkVersion = r
+//     },
+//     setMetadata(r) {
+//         Hs.metadata = r
+//     }
+// }
+//   , Ju = Ji({
+//     connectors: []
+// })
+//   , Xr = {
+//     state: Ju,
+//     subscribeKey(r, e) {
+//         return jo(Ju, r, e)
+//     },
+//     setConnectors(r) {
+//         Ju.connectors = r.map(e=>Fd(e))
+//     },
+//     addConnector(r) {
+//         var e, t;
+//         if (Ju.connectors.push(Fd(r)),
+//         r.id === "w3mEmail") {
+//             const n = r
+//               , i = zN(Ur.state);
+//             (t = (e = n == null ? void 0 : n.provider) == null ? void 0 : e.syncDappData) == null || t.call(e, {
+//                 metadata: i.metadata,
+//                 sdkVersion: i.sdkVersion,
+//                 projectId: i.projectId
+//             })
+//         }
+//     },
+//     getEmailConnector() {
+//         return Ju.connectors.find(r=>r.type === "EMAIL")
+//     },
+//     getAnnouncedConnectorRdns() {
+//         return Ju.connectors.filter(r=>r.type === "ANNOUNCED").map(r=>{
+//             var e;
+//             return (e = r.info) == null ? void 0 : e.rdns
+//         }
+//         )
+//     },
+//     getConnectors() {
+//         return Ju.connectors
+//     }
+// }
+//   , Tp = Ji({
+//     open: !1,
+//     selectedNetworkId: void 0
+// })
+//   , Wd = {
+//     state: Tp,
+//     subscribe(r) {
+//         return bc(Tp, ()=>r(Tp))
+//     },
+//     set(r) {
+//         Object.assign(Tp, {
+//             ...Tp,
+//             ...r
+//         })
+//     }
+// }
+//   , Di = Ji({
+//     supportsAllNetworks: !0,
+//     isDefaultCaipNetwork: !1
+// })
+//   , Tn = {
+//     state: Di,
+//     subscribeKey(r, e) {
+//         return jo(Di, r, e)
+//     },
+//     _getClient() {
+//         if (!Di._client)
+//             throw new Error("NetworkController client not set");
+//         return Di._client
+//     },
+//     setClient(r) {
+//         Di._client = Fd(r)
+//     },
+//     setCaipNetwork(r) {
+//         Di.caipNetwork = r,
+//         Wd.set({
+//             selectedNetworkId: r == null ? void 0 : r.id
+//         })
+//     },
+//     setDefaultCaipNetwork(r) {
+//         Di.caipNetwork = r,
+//         Wd.set({
+//             selectedNetworkId: r == null ? void 0 : r.id
+//         }),
+//         Di.isDefaultCaipNetwork = !0
+//     },
+//     setRequestedCaipNetworks(r) {
+//         Di.requestedCaipNetworks = r
+//     },
+//     async getApprovedCaipNetworksData() {
+//         const r = await this._getClient().getApprovedCaipNetworksData();
+//         Di.supportsAllNetworks = r.supportsAllNetworks,
+//         Di.approvedCaipNetworkIds = r.approvedCaipNetworkIds
+//     },
+//     async switchActiveNetwork(r) {
+//         await this._getClient().switchCaipNetwork(r),
+//         Di.caipNetwork = r
+//     },
+//     resetNetwork() {
+//         Di.isDefaultCaipNetwork || (Di.caipNetwork = void 0),
+//         Di.approvedCaipNetworkIds = void 0,
+//         Di.supportsAllNetworks = !0
+//     }
+// }
+//   , CZ = vt.getApiUrl()
+//   , Ma = new F4({
+//     baseUrl: CZ
+// })
+//   , IZ = "40"
+//   , lC = "4"
+//   , ns = Ji({
+//     page: 1,
+//     count: 0,
+//     featured: [],
+//     recommended: [],
+//     wallets: [],
+//     search: []
+// })
+//   , lr = {
+//     state: ns,
+//     subscribeKey(r, e) {
+//         return jo(ns, r, e)
+//     },
+//     _getApiHeaders() {
+//         const {projectId: r, sdkType: e, sdkVersion: t} = Ur.state;
+//         return {
+//             "x-project-id": r,
+//             "x-sdk-type": e,
+//             "x-sdk-version": t
+//         }
+//     },
+//     async _fetchWalletImage(r) {
+//         const e = `${Ma.baseUrl}/getWalletImage/${r}`
+//           , t = await Ma.getBlob({
+//             path: e,
+//             headers: lr._getApiHeaders()
+//         });
+//         bd.setWalletImage(r, URL.createObjectURL(t))
+//     },
+//     async _fetchNetworkImage(r) {
+//         const e = `${Ma.baseUrl}/public/getAssetImage/${r}`
+//           , t = await Ma.getBlob({
+//             path: e,
+//             headers: lr._getApiHeaders()
+//         });
+//         bd.setNetworkImage(r, URL.createObjectURL(t))
+//     },
+//     async _fetchConnectorImage(r) {
+//         const e = `${Ma.baseUrl}/public/getAssetImage/${r}`
+//           , t = await Ma.getBlob({
+//             path: e,
+//             headers: lr._getApiHeaders()
+//         });
+//         bd.setConnectorImage(r, URL.createObjectURL(t))
+//     },
+//     async fetchNetworkImages() {
+//         const {requestedCaipNetworks: r} = Tn.state
+//           , e = r == null ? void 0 : r.map(({imageId: t})=>t).filter(Boolean);
+//         e && await Promise.allSettled(e.map(t=>lr._fetchNetworkImage(t)))
+//     },
+//     async fetchConnectorImages() {
+//         const {connectors: r} = Xr.state
+//           , e = r.map(({imageId: t})=>t).filter(Boolean);
+//         await Promise.allSettled(e.map(t=>lr._fetchConnectorImage(t)))
+//     },
+//     async fetchFeaturedWallets() {
+//         const {featuredWalletIds: r} = Ur.state;
+//         if (r != null && r.length) {
+//             const {data: e} = await Ma.get({
+//                 path: "/getWallets",
+//                 headers: lr._getApiHeaders(),
+//                 params: {
+//                     page: "1",
+//                     entries: r != null && r.length ? String(r.length) : lC,
+//                     include: r == null ? void 0 : r.join(",")
+//                 }
+//             });
+//             e.sort((n,i)=>r.indexOf(n.id) - r.indexOf(i.id));
+//             const t = e.map(n=>n.image_id).filter(Boolean);
+//             await Promise.allSettled(t.map(n=>lr._fetchWalletImage(n))),
+//             ns.featured = e
+//         }
+//     },
+//     async fetchRecommendedWallets() {
+//         const {includeWalletIds: r, excludeWalletIds: e, featuredWalletIds: t} = Ur.state
+//           , n = [...e ?? [], ...t ?? []].filter(Boolean)
+//           , {data: i, count: s} = await Ma.get({
+//             path: "/getWallets",
+//             headers: lr._getApiHeaders(),
+//             params: {
+//                 page: "1",
+//                 entries: lC,
+//                 include: r == null ? void 0 : r.join(","),
+//                 exclude: n == null ? void 0 : n.join(",")
+//             }
+//         })
+//           , o = ls.getRecentWallets()
+//           , a = i.map(u=>u.image_id).filter(Boolean)
+//           , c = o.map(u=>u.image_id).filter(Boolean);
+//         await Promise.allSettled([...a, ...c].map(u=>lr._fetchWalletImage(u))),
+//         ns.recommended = i,
+//         ns.count = s ?? 0
+//     },
+//     async fetchWallets({page: r}) {
+//         const {includeWalletIds: e, excludeWalletIds: t, featuredWalletIds: n} = Ur.state
+//           , i = [...ns.recommended.map(({id: c})=>c), ...t ?? [], ...n ?? []].filter(Boolean)
+//           , {data: s, count: o} = await Ma.get({
+//             path: "/getWallets",
+//             headers: lr._getApiHeaders(),
+//             params: {
+//                 page: String(r),
+//                 entries: IZ,
+//                 include: e == null ? void 0 : e.join(","),
+//                 exclude: i.join(",")
+//             }
+//         })
+//           , a = s.map(c=>c.image_id).filter(Boolean);
+//         await Promise.allSettled([...a.map(c=>lr._fetchWalletImage(c)), vt.wait(300)]),
+//         ns.wallets = [...ns.wallets, ...s],
+//         ns.count = o > ns.count ? o : ns.count,
+//         ns.page = r
+//     },
+//     async searchWallet({search: r}) {
+//         const {includeWalletIds: e, excludeWalletIds: t} = Ur.state;
+//         ns.search = [];
+//         const {data: n} = await Ma.get({
+//             path: "/getWallets",
+//             headers: lr._getApiHeaders(),
+//             params: {
+//                 page: "1",
+//                 entries: "100",
+//                 search: r,
+//                 include: e == null ? void 0 : e.join(","),
+//                 exclude: t == null ? void 0 : t.join(",")
+//             }
+//         })
+//           , i = n.map(s=>s.image_id).filter(Boolean);
+//         await Promise.allSettled([...i.map(s=>lr._fetchWalletImage(s)), vt.wait(300)]),
+//         ns.search = n
+//     },
+//     prefetch() {
+//         ns.prefetchPromise = Promise.race([Promise.allSettled([lr.fetchFeaturedWallets(), lr.fetchRecommendedWallets(), lr.fetchNetworkImages(), lr.fetchConnectorImages()]), vt.wait(3e3)])
+//     }
+// }
+//   , TZ = vt.getAnalyticsUrl()
+//   , RZ = new F4({
+//     baseUrl: TZ
+// })
+//   , NZ = ["MODAL_CREATED"]
+//   , Vh = Ji({
+//     timestamp: Date.now(),
+//     data: {
+//         type: "track",
+//         event: "MODAL_CREATED"
+//     }
+// })
+//   , Ft = {
+//     state: Vh,
+//     subscribe(r) {
+//         return bc(Vh, ()=>r(Vh))
+//     },
+//     _getApiHeaders() {
+//         const {projectId: r, sdkType: e, sdkVersion: t} = Ur.state;
+//         return {
+//             "x-project-id": r,
+//             "x-sdk-type": e,
+//             "x-sdk-version": t
+//         }
+//     },
+//     async _sendAnalyticsEvent(r) {
+//         try {
+//             if (NZ.includes(r.data.event) || typeof window > "u")
+//                 return;
+//             await RZ.post({
+//                 path: "/e",
+//                 headers: Ft._getApiHeaders(),
+//                 body: {
+//                     eventId: vt.getUUID(),
+//                     url: window.location.href,
+//                     domain: window.location.hostname,
+//                     timestamp: r.timestamp,
+//                     props: r.data
+//                 }
+//             })
+//         } catch {}
+//     },
+//     sendEvent(r) {
+//         Vh.timestamp = Date.now(),
+//         Vh.data = r,
+//         Ur.state.enableAnalytics && Ft._sendAnalyticsEvent(Vh)
+//     }
+// }
+//   , pn = Ji({
+//     view: "Connect",
+//     history: ["Connect"]
+// })
+//   , at = {
+//     state: pn,
+//     subscribeKey(r, e) {
+//         return jo(pn, r, e)
+//     },
+//     push(r, e) {
+//         r !== pn.view && (pn.view = r,
+//         pn.history.push(r),
+//         pn.data = e)
+//     },
+//     reset(r) {
+//         pn.view = r,
+//         pn.history = [r]
+//     },
+//     replace(r, e) {
+//         pn.history.length > 1 && pn.history.at(-1) !== r && (pn.view = r,
+//         pn.history[pn.history.length - 1] = r,
+//         pn.data = e)
+//     },
+//     goBack() {
+//         if (pn.history.length > 1) {
+//             pn.history.pop();
+//             const [r] = pn.history.slice(-1);
+//             r && (pn.view = r)
+//         }
+//     },
+//     goBackToIndex(r) {
+//         if (pn.history.length > 1) {
+//             pn.history = pn.history.slice(0, r + 1);
+//             const [e] = pn.history.slice(-1);
+//             e && (pn.view = e)
+//         }
+//     }
+// }
+//   , Yu = Ji({
+//     loading: !1,
+//     open: !1
+// })
+//   , en = {
+//     state: Yu,
+//     subscribe(r) {
+//         return bc(Yu, ()=>r(Yu))
+//     },
+//     subscribeKey(r, e) {
+//         return jo(Yu, r, e)
+//     },
+//     async open(r) {
+//         await lr.state.prefetchPromise,
+//         r != null && r.view ? at.reset(r.view) : Pr.state.isConnected ? at.reset("Account") : at.reset("Connect"),
+//         Yu.open = !0,
+//         Wd.set({
+//             open: !0
+//         }),
+//         Ft.sendEvent({
+//             type: "track",
+//             event: "MODAL_OPEN"
+//         })
+//     },
+//     close() {
+//         Yu.open = !1,
+//         Wd.set({
+//             open: !1
+//         }),
+//         Ft.sendEvent({
+//             type: "track",
+//             event: "MODAL_CLOSE"
+//         })
+//     },
+//     setLoading(r) {
+//         Yu.loading = r
+//     }
+// }
+//   , OZ = vt.getBlockchainApiUrl()
+//   , uC = new F4({
+//     baseUrl: OZ
+// })
+//   , VN = {
+//     fetchIdentity({caipChainId: r, address: e}) {
+//         return uC.get({
+//             path: `/v1/identity/${e}`,
+//             params: {
+//                 chainId: r,
+//                 projectId: Ur.state.projectId
+//             }
+//         })
+//     },
+//     fetchTransactions({account: r, projectId: e, cursor: t}) {
+//         const n = t ? {
+//             cursor: t
+//         } : {};
+//         return uC.get({
+//             path: `/v1/account/${r}/history?projectId=${e}`,
+//             params: n
+//         })
+//     }
+// }
+//   , Dc = Ji({
+//     message: "",
+//     variant: "success",
+//     open: !1
+// })
+//   , Rn = {
+//     state: Dc,
+//     subscribeKey(r, e) {
+//         return jo(Dc, r, e)
+//     },
+//     showSuccess(r) {
+//         Dc.message = r,
+//         Dc.variant = "success",
+//         Dc.open = !0
+//     },
+//     showError(r) {
+//         const e = vt.parseError(r);
+//         Dc.message = e,
+//         Dc.variant = "error",
+//         Dc.open = !0
+//     },
+//     hide() {
+//         Dc.open = !1
+//     }
+// }
+//   , Zn = Ji({
+//     transactions: [],
+//     transactionsByYear: {},
+//     loading: !1,
+//     empty: !1,
+//     next: void 0
+// })
+//   , ra = {
+//     state: Zn,
+//     subscribe(r) {
+//         return bc(Zn, ()=>r(Zn))
+//     },
+//     async fetchTransactions(r) {
+//         const {projectId: e} = Ur.state;
+//         if (!e || !r)
+//             throw new Error("Transactions can't be fetched without a projectId and an accountAddress");
+//         Zn.loading = !0;
+//         try {
+//             const t = await VN.fetchTransactions({
+//                 account: r,
+//                 projectId: e,
+//                 cursor: Zn.next
+//             })
+//               , n = this.filterSpamTransactions(t.data)
+//               , i = [...Zn.transactions, ...n];
+//             Zn.loading = !1,
+//             Zn.transactions = i,
+//             Zn.transactionsByYear = this.groupTransactionsByYear(Zn.transactionsByYear, n),
+//             Zn.empty = i.length === 0,
+//             Zn.next = t.next ? t.next : void 0
+//         } catch {
+//             Ft.sendEvent({
+//                 type: "track",
+//                 event: "ERROR_FETCH_TRANSACTIONS",
+//                 properties: {
+//                     address: r,
+//                     projectId: e,
+//                     cursor: Zn.next
+//                 }
+//             }),
+//             Rn.showError("Failed to fetch transactions"),
+//             Zn.loading = !1,
+//             Zn.empty = !0
+//         }
+//     },
+//     groupTransactionsByYear(r={}, e=[]) {
+//         const t = r;
+//         return e.forEach(n=>{
+//             var s;
+//             const i = new Date(n.metadata.minedAt).getFullYear();
+//             t[i] || (t[i] = []),
+//             (s = t[i]) == null || s.push(n)
+//         }
+//         ),
+//         t
+//     },
+//     filterSpamTransactions(r) {
+//         return r.filter(e=>!e.transfers.every(n=>{
+//             var i;
+//             return ((i = n.nft_info) == null ? void 0 : i.flags.is_spam) === !0
+//         }
+//         ))
+//     },
+//     resetTransactions() {
+//         Zn.transactions = [],
+//         Zn.transactionsByYear = {},
+//         Zn.loading = !1,
+//         Zn.empty = !1,
+//         Zn.next = void 0
+//     }
+// }
+//   , ui = Ji({
+//     wcError: !1,
+//     buffering: !1
+// })
+//   , wr = {
+//     state: ui,
+//     subscribeKey(r, e) {
+//         return jo(ui, r, e)
+//     },
+//     _getClient() {
+//         if (!ui._client)
+//             throw new Error("ConnectionController client not set");
+//         return ui._client
+//     },
+//     setClient(r) {
+//         ui._client = Fd(r)
+//     },
+//     connectWalletConnect() {
+//         ui.wcPromise = this._getClient().connectWalletConnect(r=>{
+//             ui.wcUri = r,
+//             ui.wcPairingExpiry = vt.getPairingExpiry()
+//         }
+//         )
+//     },
+//     async connectExternal(r) {
+//         var e, t;
+//         await ((t = (e = this._getClient()).connectExternal) == null ? void 0 : t.call(e, r)),
+//         ls.setConnectedConnector(r.type)
+//     },
+//     async signMessage(r) {
+//         return this._getClient().signMessage(r)
+//     },
+//     checkInstalled(r) {
+//         var e, t;
+//         return (t = (e = this._getClient()).checkInstalled) == null ? void 0 : t.call(e, r)
+//     },
+//     resetWcConnection() {
+//         ui.wcUri = void 0,
+//         ui.wcPairingExpiry = void 0,
+//         ui.wcPromise = void 0,
+//         ui.wcLinking = void 0,
+//         ui.recentWallet = void 0,
+//         ra.resetTransactions(),
+//         ls.deleteWalletConnectDeepLink()
+//     },
+//     setWcLinking(r) {
+//         ui.wcLinking = r
+//     },
+//     setWcError(r) {
+//         ui.wcError = r,
+//         ui.buffering = !1
+//     },
+//     setRecentWallet(r) {
+//         ui.recentWallet = r
+//     },
+//     setBuffering(r) {
+//         ui.buffering = r
+//     },
+//     async disconnect() {
+//         await this._getClient().disconnect(),
+//         this.resetWcConnection()
+//     }
+// }
+//   , zs = Ji({
+//     status: "uninitialized",
+//     isSiweEnabled: !1
+// })
+//   , jn = {
+//     state: zs,
+//     subscribeKey(r, e) {
+//         return jo(zs, r, e)
+//     },
+//     subscribe(r) {
+//         return bc(zs, ()=>r(zs))
+//     },
+//     _getClient() {
+//         if (!zs._client)
+//             throw new Error("SIWEController client not set");
+//         return zs._client
+//     },
+//     async getNonce() {
+//         const e = await this._getClient().getNonce();
+//         return this.setNonce(e),
+//         e
+//     },
+//     async getSession() {
+//         const e = await this._getClient().getSession();
+//         return e && (this.setSession(e),
+//         this.setStatus("success")),
+//         e
+//     },
+//     createMessage(r) {
+//         const t = this._getClient().createMessage(r);
+//         return this.setMessage(t),
+//         t
+//     },
+//     async verifyMessage(r) {
+//         return await this._getClient().verifyMessage(r)
+//     },
+//     async signIn() {
+//         return await this._getClient().signIn()
+//     },
+//     async signOut() {
+//         var e;
+//         const r = this._getClient();
+//         await r.signOut(),
+//         this.setStatus("ready"),
+//         (e = r.onSignOut) == null || e.call(r)
+//     },
+//     onSignIn(r) {
+//         var t;
+//         const e = this._getClient();
+//         (t = e.onSignIn) == null || t.call(e, r)
+//     },
+//     onSignOut() {
+//         var e;
+//         const r = this._getClient();
+//         (e = r.onSignOut) == null || e.call(r)
+//     },
+//     setSIWEClient(r) {
+//         zs._client = Fd(r),
+//         zs.status = "ready",
+//         zs.isSiweEnabled = r.options.enabled
+//     },
+//     setNonce(r) {
+//         zs.nonce = r
+//     },
+//     setStatus(r) {
+//         zs.status = r
+//     },
+//     setMessage(r) {
+//         zs.message = r
+//     },
+//     setSession(r) {
+//         zs.session = r
+//     }
+// }
+//   , Qu = Ji({
+//     themeMode: "dark",
+//     themeVariables: {}
+// })
+//   , Rs = {
+//     state: Qu,
+//     subscribe(r) {
+//         return bc(Qu, ()=>r(Qu))
+//     },
+//     setThemeMode(r) {
+//         Qu.themeMode = r
+//     },
+//     setThemeVariables(r) {
+//         Qu.themeVariables = {
+//             ...Qu.themeVariables,
+//             ...r
+//         }
+//     },
+//     getSnapshot() {
+//         return zN(Qu)
+//     }
+// }
+//   , Cn = {
+//     getWalletImage(r) {
+//         if (r != null && r.image_url)
+//             return r == null ? void 0 : r.image_url;
+//         if (r != null && r.image_id)
+//             return bd.state.walletImages[r.image_id]
+//     },
+//     getNetworkImage(r) {
+//         if (r != null && r.imageUrl)
+//             return r == null ? void 0 : r.imageUrl;
+//         if (r != null && r.imageId)
+//             return bd.state.networkImages[r.imageId]
+//     },
+//     getConnectorImage(r) {
+//         if (r != null && r.imageUrl)
+//             return r.imageUrl;
+//         if (r != null && r.imageId)
+//             return bd.state.connectorImages[r.imageId]
+//     }
+// }
+//   , qN = {
+//     goBackOrCloseModal() {
+//         at.state.history.length > 1 ? at.goBack() : en.close()
+//     },
+//     navigateAfterNetworkSwitch() {
+//         const {history: r} = at.state
+//           , e = r.findIndex(t=>t === "Networks");
+//         e >= 1 ? at.goBackToIndex(e - 1) : en.close()
+//     }
+// };
 /**
  * @license
  * Copyright 2019 Google LLC
@@ -37113,6 +37113,7 @@ class gre {
         return !this.initPromise && !XC && vt.isClient() && (XC = !0,
             this.initPromise = new Promise(async e => {
                 await Promise.all([gn(() => Promise.resolve().then(() => xX), void 0), gn(() => Promise.resolve().then(() => GX), void 0)]);
+                const t = document.createElement("w3m-modal");
                 document.body.insertAdjacentElement("beforeend", t),
                     e()
             }
